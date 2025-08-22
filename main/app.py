@@ -8,14 +8,13 @@ st.set_page_config(
     page_icon="🫁",
     initial_sidebar_state="expanded",
 )
-# Back-compat shim: accept either 'use_container_width' or 'use_column_width'
+# --- Back-compat shim: accept either 'use_column_width' or 'use_column_width'
 _orig_st_image = st.image
 def _image_compat(*args, **kwargs):
-    if "use_container_width" in kwargs and "use_column_width" not in kwargs:
-        kwargs["use_column_width"] = kwargs.pop("use_container_width")
+    if "use_column_width" in kwargs and "use_column_width" not in kwargs:
+        kwargs["use_column_width"] = kwargs.pop("use_column_width")
     return _orig_st_image(*args, **kwargs)
 st.image = _image_compat
-
 
 
 # ── Standard imports ──────────────────────────────────────────────────────────────
