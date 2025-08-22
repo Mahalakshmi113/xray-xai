@@ -344,9 +344,9 @@ with colA:
 
     # show existing plots if present
     if os.path.exists("reports/roc.png"):
-        st.image("reports/roc.png", caption="ROC", use_container_width=True)
+        st.image("reports/roc.png", caption="ROC", use_column_width=True)
     if os.path.exists("reports/calibration.png"):
-        st.image("reports/calibration.png", caption="Reliability diagram (calibration)", use_container_width=True)
+        st.image("reports/calibration.png", caption="Reliability diagram (calibration)", use_column_width=True)
 
     with st.expander("Compute test-set metrics + ROC/ECE + Threshold@90%Spec + CIs"):
         n_boot = st.number_input("Bootstrap samples for CIs", 50, 1000, 200, 50)
@@ -495,9 +495,9 @@ with colA:
                             gc_pos = gc - gc.min(); s = gc_pos.sum() + 1e-6
                             in_lung = float((gc_pos*mask).sum()/s); out_lung = 1.0 - in_lung
                             cols = st.columns(3)
-                            with cols[0]: st.image(pil.resize((img_size,img_size)), caption=f"{title}\n{os.path.basename(fp)}", use_container_width=True)
-                            with cols[1]: st.image(gc_img, caption=f"Grad-CAM (outside-lung {out_lung:.0%})", use_container_width=True)
-                            with cols[2]: st.image(ig_img, caption="Integrated Gradients", use_container_width=True)
+                            with cols[0]: st.image(pil.resize((img_size,img_size)), caption=f"{title}\n{os.path.basename(fp)}", use_column_width=True)
+                            with cols[1]: st.image(gc_img, caption=f"Grad-CAM (outside-lung {out_lung:.0%})", use_column_width=True)
+                            with cols[2]: st.image(ig_img, caption="Integrated Gradients", use_column_width=True)
 
                         for i in sel_fp:
                             render_case(i, f"FP  (y=0, p={p[i]:.3f} ≥ thr {threshold:.2f})")
@@ -544,15 +544,15 @@ with colB:
             prob = 1.0 - float(prob)
 
         pred = "PNEUMONIA" if prob >= threshold else "NORMAL"
-        st.image(pil.resize((img_size, img_size)), caption=f"Original{' — GT: '+src_label if src_label else ''}", use_container_width=True)
+        st.image(pil.resize((img_size, img_size)), caption=f"Original{' — GT: '+src_label if src_label else ''}", use_column_width=True)
         st.write(f"**Prediction:** {pred} | **p:** {prob:.3f} ± {prob_std:.3f} | **Threshold:** {threshold:.2f}")
 
         if st.button("Generate explanations (Grad-CAM + IG)"):
             gc = gradcam_map(model, x)
             ig = ig_map(model, x)
             c1, c2 = st.columns(2)
-            with c1: st.image(overlay_heatmap(pil, gc, size=img_size), caption="Grad-CAM", use_container_width=True)
-            with c2: st.image(overlay_heatmap(pil, ig, size=img_size), caption="Integrated Gradients", use_container_width=True)
+            with c1: st.image(overlay_heatmap(pil, gc, size=img_size), caption="Grad-CAM", use_column_width=True)
+            with c2: st.image(overlay_heatmap(pil, ig, size=img_size), caption="Integrated Gradients", use_column_width=True)
 
             # Lung-focus sanity check
             mask = central_lung_mask(img_size, img_size, pad=0.12)
