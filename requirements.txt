@@ -1,8 +1,7 @@
---extra-index-url https://download.pytorch.org/whl/cpu
-
-torch==2.8.0+cpu
-torchvision==0.23.0+cpu
-torchaudio==2.8.0+cpu
+# PyTorch CPU wheels (Linux x86_64, Python 3.13)
+torch @ https://download.pytorch.org/whl/cpu/torch-2.8.0%2Bcpu-cp313-cp313-manylinux_2_28_x86_64.whl
+torchvision @ https://download.pytorch.org/whl/cpu/torchvision-0.23.0%2Bcpu-cp313-cp313-manylinux_2_28_x86_64.whl
+torchaudio @ https://download.pytorch.org/whl/cpu/torchaudio-2.8.0%2Bcpu-cp313-cp313-manylinux_2_28_x86_64.whl
 
 streamlit==1.36.0
 captum==0.7.0

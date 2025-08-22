@@ -22,8 +22,6 @@ from torch import nn
 from torchvision import models, transforms
 from PIL import Image
 
-# NOTE: cv2 is imported inside overlay_heatmap() so the app still runs without it.
-
 # ============================== Utilities ==============================
 
 def get_device(prefer_mps: bool = False):
