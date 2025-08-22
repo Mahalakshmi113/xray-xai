@@ -8,6 +8,14 @@ st.set_page_config(
     page_icon="🫁",
     initial_sidebar_state="expanded",
 )
+# --- Back-compat shim: allow both 'use_container_width' and 'use_column_width'
+_orig_st_image = st.image
+def _image_compat(*args, **kwargs):
+    if "use_container_width" in kwargs and "use_column_width" not in kwargs:
+        # Streamlit 1.36 uses 'use_column_width'
+        kwargs["use_column_width"] = kwargs.pop("use_container_width")
+    return _orig_st_image(*args, **kwargs)
+st.image = _image_compat
 
 # ── Standard imports ──────────────────────────────────────────────────────────────
 import os, glob, re, math, random
