@@ -1,11 +1,14 @@
-torch @ https://download.pytorch.org/whl/cpu/torch-2.8.0%2Bcpu-cp313-cp313-manylinux_2_28_x86_64.whl
-torchvision @ https://download.pytorch.org/whl/cpu/torchvision-0.23.0%2Bcpu-cp313-cp313-manylinux_2_28_x86_64.whl
-torchaudio @ https://download.pytorch.org/whl/cpu/torchaudio-2.8.0%2Bcpu-cp313-cp313-manylinux_2_28_x86_64.whl
+# Core
+torch==2.8.0+cpu
+torchvision==0.23.0+cpu
+torchaudio==2.8.0+cpu
+--extra-index-url https://download.pytorch.org/whl/cpu
 
-streamlit==1.36.0
+# App & utils
+gradio==5.43.1
 captum==0.7.0
-pillow==10.4.0
-pandas==2.2.3
 opencv-python-headless==4.10.0.84
+pillow>=10.3.0
 matplotlib==3.9.2
-
+pandas==2.2.3
+numpy>=1.26

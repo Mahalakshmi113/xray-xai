@@ -1,13 +1,13 @@
-# Pneumonia X-ray — XAI Dashboard (research demo)
+---
+title: Pneumonia X-ray — XAI Dashboard
+emoji: 🫁
+sdk: gradio
+sdk_version: 5.43.1
+python_version: 3.10
+app_file: app.py
+pinned: false
+---
 
-- ResNet-50 classifier with calibration, TTA, ROC/ECE, bootstrap CIs
-- XAI (Grad-CAM + IG) + lung-focus sanity check
-- Operates at 90% specificity; PPV/NPV vs prevalence
-
-**Not for clinical use.**
-
-## Run locally
-python -m venv .venv && source .venv/bin/activate
-pip install -r requirements.txt
-streamlit run app.py
-
+Single-page Gradio dashboard for Chest X-ray Pneumonia detection + XAI (Grad-CAM, IG),
+with dataset-level metrics (ROC, ECE/Brier, Confusion Matrix, Thr@90%Spec).
+**Research demo – not for clinical use.**
