@@ -11,3 +11,4 @@ pinned: false
 Single-page Gradio dashboard for Chest X-ray Pneumonia detection + XAI (Grad-CAM, IG),
 with dataset-level metrics (ROC, ECE/Brier, Confusion Matrix, Thr@90%Spec).
 **Research demo – not for clinical use.**
+https://drive.google.com/file/d/1FuzQ2oG7b6fHswZPj7uCkvzCnQtvN0kf/view?usp=sharing
