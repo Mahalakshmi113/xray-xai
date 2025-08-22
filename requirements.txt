@@ -1,15 +1,12 @@
-# CPU-only wheels for PyTorch
 --extra-index-url https://download.pytorch.org/whl/cpu
+torch==2.3.1
+torchvision==0.18.1
+torchaudio==2.3.1
 
-# Tested combo that works on Streamlit Cloud / HF Spaces
-torch==2.4.1
-torchvision==0.19.1
-torchaudio==2.4.1
-
-streamlit==1.36.0
-captum==0.7.0
-pillow==10.3.0
+streamlit==1.32.0
+captum==0.6.0
+pillow==10.2.0
 pandas==2.2.2
-opencv-python-headless==4.10.0.84
+opencv-python-headless==4.8.1.78
 matplotlib==3.8.4
 
