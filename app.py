@@ -1,18 +1,28 @@
 # app.py — Chest X-ray Pneumonia XAI (single page). Research demo; not for clinical use.
 
-import os, glob, re, numpy as np, pandas as pd, math, random
+# ── Streamlit must be configured before any other st.* call ────────────────────────
+import streamlit as st
+st.set_page_config(
+    page_title="Pneumonia X-ray — XAI",
+    layout="wide",
+    page_icon="🫁",
+    initial_sidebar_state="expanded",
+)
+
+# ── Standard imports ──────────────────────────────────────────────────────────────
+import os, glob, re, math, random
+import numpy as np
+import pandas as pd
+
 os.environ.setdefault("STREAMLIT_SERVER_PORT", "8501")
 
-import torch, torch.nn.functional as F
+import torch
+import torch.nn.functional as F
 from torch import nn
 from torchvision import models, transforms
 from PIL import Image
-import streamlit as st
-# Sidebar
-default_samples = os.path.join(os.path.dirname(__file__), "samples")
-default_local   = "/Users/mahalakshmibr/Downloads/Data"
-default_data = default_samples if os.path.isdir(default_samples) else (default_local if os.path.isdir(default_local) else "data/raw/chest_xray")
-data_dir  = st.sidebar.text_input("Dataset folder (contains train/val/test)", default_data)
+
+# NOTE: cv2 is imported inside overlay_heatmap() so the app still runs without it.
 
 # ============================== Utilities ==============================
 
@@ -32,7 +42,7 @@ def preprocess(img_obj, img_size=224):
     return tfm(pil), pil
 
 def overlay_heatmap(pil, heat, alpha=0.5, size=224):
-    import cv2
+    import cv2  # lazy import
     pil = pil.resize((size, size))
     base = np.array(pil)
     heat = (heat - heat.min()) / (heat.max() - heat.min() + 1e-6)
@@ -71,7 +81,7 @@ def metrics_from_probs(y, p, thr):
     return (tn, fp, fn, tp), acc, prec, rec, spec, f1
 
 def thr_at_spec(y, p, target_spec=0.90):
-    """Threshold achieving >= target specificity (no sklearn)."""
+    """Find a threshold achieving >= target specificity (no sklearn)."""
     y = np.asarray(y).astype(int); p = np.asarray(p).astype(float)
     if len(y) == 0: return 0.5
     order = np.argsort(-p)  # desc by prob
@@ -123,7 +133,7 @@ def reliability_curve(y_true, y_prob, n_bins=10):
         idx = (p >= lo) & (p < hi) if i < n_bins-1 else (p >= lo) & (p <= hi)
         n_k = int(idx.sum())
         if n_k == 0:
-            bin_stats.append(( (lo+hi)/2, 0.0, 0 ))
+            bin_stats.append(((lo+hi)/2, 0.0, 0))
             continue
         conf = float(p[idx].mean())
         acc  = float(y[idx].mean())
@@ -242,23 +252,26 @@ def fit_temperature_on_val(model, data_dir, img_size, device, batch=32):
 
 # ============================== UI ==============================
 
-st.set_page_config(page_title="Pneumonia X-ray — XAI", layout="wide")
 st.title("Chest X-ray Pneumonia — Explainable AI Dashboard")
 st.caption("Research demo (non-clinical). Metrics, ROC/ECE, bootstrap CIs, misclass gallery, Grad-CAM/IG, lung-focus check.")
 
-# Sidebar
-default_data = "/Users/mahalakshmibr/Downloads/Data" if os.path.isdir("/Users/mahalakshmibr/Downloads/Data") else "data/raw/chest_xray"
+# Sidebar defaults: prefer bundled samples/ when deploying
+default_samples = os.path.join(os.path.dirname(__file__), "samples")
+default_local   = "/Users/mahalakshmibr/Downloads/Data"
+default_data = default_samples if os.path.isdir(default_samples) else (default_local if os.path.isdir(default_local) else "data/raw/chest_xray")
+
 data_dir  = st.sidebar.text_input("Dataset folder (contains train/val/test)", default_data)
 ckpt_path = st.sidebar.text_input("Model checkpoint (.pt/.pth)", "outputs/best.pt")
 img_size  = st.sidebar.number_input("Image size", min_value=128, max_value=512, value=224, step=32)
-use_mps   = st.sidebar.checkbox("Use Apple MPS (Metal)", value=True)
+use_mps   = st.sidebar.checkbox("Use Apple MPS (Metal)", value=False)  # cloud is CPU; your Mac can tick this
 allow_imagenet = st.sidebar.checkbox("If checkpoint missing, use ImageNet fallback (downloads once)", value=False)
 
 # 🔁 label-swap toggle (if model predicts NORMAL prob)
 swap_labels = st.sidebar.checkbox("Model outputs NORMAL prob (swap labels)", value=True)
 
 # Threshold
-if "threshold" not in st.session_state: st.session_state["threshold"] = 0.50
+if "threshold" not in st.session_state:
+    st.session_state["threshold"] = 0.50
 threshold = st.sidebar.slider("Decision threshold", 0.0, 1.0, float(st.session_state["threshold"]), 0.01)
 st.session_state["threshold"] = threshold
 
@@ -299,7 +312,7 @@ if st.sidebar.button("Use Threshold@90%Spec from reports"):
     else:
         st.sidebar.warning("No threshold found in reports. Compute it below.")
 
-# Quick leakage check
+# Quick leakage check (filename overlap)
 with st.sidebar.expander("Data split overlap check"):
     def overlap_summary(root):
         splits = ["train","val","test"]
@@ -316,7 +329,7 @@ with st.sidebar.expander("Data split overlap check"):
     try:
         ov = overlap_summary(data_dir)
         for k,v in ov.items(): st.write(f"{k}: {v}")
-    except Exception as _e:
+    except Exception:
         st.write("Could not compute (check dataset path).")
 
 colA, colB = st.columns(2)
@@ -383,7 +396,6 @@ with colA:
                 # Calibration
                 bins, ece, brier = reliability_curve(y, p, n_bins=10)
                 plt.figure()
-                centers = np.linspace(0.05,0.95,10)
                 plt.plot([0,1],[0,1],'--')
                 plt.scatter(bins[:,0], bins[:,1])
                 plt.xlabel("Mean predicted probability")
@@ -403,9 +415,7 @@ with colA:
                     thr_b = thr_at_spec(y_b, p_b, 0.90)
                     fpr_b, tpr_b = roc_curve_np(y_b, p_b)
                     auc_samples.append(auc_trapz(fpr_b, tpr_b))
-                    _,_,_,_,_,_, sens_b,_,_ = (*metrics_from_probs(y_b, p_b, thr_b),)
-                    # unpack trick above is clunky; better:
-                    sens_b = metrics_from_probs(y_b, p_b, thr_b)[3]  # recall
+                    sens_b = metrics_from_probs(y_b, p_b, thr_b)[3]  # recall at that thr
                     sens90_samples.append(sens_b)
                     pb2.progress((i+1)/n_boot)
                 def ci(a, lo=2.5, hi=97.5):
@@ -462,7 +472,6 @@ with colA:
                 with st.expander("Misclassification gallery (top FPs & FNs with XAI)"):
                     # collect mistakes
                     pred = (p >= threshold).astype(int)
-                    conf = np.abs(p - threshold)
                     idx_fp = np.where((y==0) & (pred==1))[0]
                     idx_fn = np.where((y==1) & (pred==0))[0]
                     # sort by confidence (most wrong & confident first)
@@ -557,4 +566,4 @@ with colB:
                 st.warning("High outside-lung saliency → potential spurious cues (edges/devices/markers).")
 
 # ============================== Footer ==============================
-st.caption("Saved reports: metrics.txt, roc.png, calibration.png in ./reports.  Use 'Set threshold to 90% specificity' for a clinically meaningful operating point.")
+st.caption("Saved reports: metrics.txt, roc.png, calibration.png in ./reports. Use 'Set threshold to 90% specificity' for a clinically meaningful operating point.")
