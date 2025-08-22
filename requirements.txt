@@ -1,12 +1,15 @@
 --extra-index-url https://download.pytorch.org/whl/cpu
-torch==2.3.1
-torchvision==0.18.1
-torchaudio==2.3.1
 
-streamlit==1.32.0
-captum==0.6.0
-pillow==10.2.0
+# PyTorch CPU wheels that Streamlit Cloud provides
+torch==2.5.1+cpu
+torchvision==0.20.1+cpu
+torchaudio==2.5.1+cpu
+
+# Rest of the stack (stable pins)
+streamlit==1.36.0
+captum==0.7.0
+pillow==10.3.0
 pandas==2.2.2
-opencv-python-headless==4.8.1.78
+opencv-python-headless==4.10.0.84
 matplotlib==3.8.4
 
