@@ -1,11 +1,9 @@
 --extra-index-url https://download.pytorch.org/whl/cpu
 
-# PyTorch CPU wheels that exist for Python 3.13
 torch==2.8.0+cpu
 torchvision==0.23.0+cpu
 torchaudio==2.8.0+cpu
 
-# Stable pins known to work on Streamlit Cloud
 streamlit==1.36.0
 captum==0.7.0
 pillow==10.4.0
